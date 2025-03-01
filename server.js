@@ -14,7 +14,11 @@ const app = express();
 
 // Configurar middlewares
 app.use(bodyParser.json()); // Para manejar JSON en el cuerpo de la solicitud
-app.use(cors()); // Permitir peticiones desde el frontend
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
 
 // Ruta para manejar el envío del formulario
 app.post("/api/submit", (req, res) => {
@@ -193,5 +197,5 @@ app.get("/", (req, res) => {
 
 
 app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+  console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 });
