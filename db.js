@@ -1,23 +1,25 @@
-const sql = require('mssql/msnodesqlv8');
+const sql = require('mssql');
 
 const config = {
+  user: 'sa',
+  password: 'Martinez25*', // Reemplaza por la real
+  server: 'ANALISTAFB', // Este es el tuyo
   database: 'vinculacion_consultores_martin_db',
-  server: 'ANALISTAFB', // tu servidor (confírmalo en SSMS)
-  driver: 'msnodesqlv8',
   options: {
-    trustedConnection: true
-  }
+    encrypt: false,
+    trustServerCertificate: true,
+  },
 };
 
 const poolPromise = new sql.ConnectionPool(config)
   .connect()
   .then(pool => {
-    console.log('✅ Conexión a SQL Server exitosa');
+    console.log('✅ Conectado a SQL Server');
     return pool;
   })
-  .catch(err => {
-    console.error('❌ Error al conectar:', err);
-  });
+  .catch(err => console.error('❌ Error al conectar a SQL Server:', err));
 
-module.exports = { sql, poolPromise };
-
+module.exports = {
+  sql,
+  poolPromise,
+};

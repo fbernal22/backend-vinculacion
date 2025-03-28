@@ -4,8 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
-const fs = require("fs");
-const xlsx = require("xlsx");
+const express = require('express');
 const { sql, poolPromise } = require('./db');
 
 
@@ -72,16 +71,17 @@ app.post("/enviar-correo", async (req, res) => {
   });
 
 // Obtener todas las vinculaciones
-app.get("/vinculaciones", (req, res) => {
-  db.query("SELECT * FROM vinculacion", (err, results) => {
-      if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Error al obtener datos" });
-          return;
-      }
-      res.json(results);
-  });
+app.get("/vinculaciones", async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().query("SELECT * FROM FormularioVinculacion");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener datos" });
+  }
 });
+
 
 // Obtener una vinculación por ID
 app.get("/vinculacion/:id", (req, res) => {
@@ -136,65 +136,18 @@ app.delete("/vinculacion/:id", (req, res) => {
   });
 });
 
-app.use(express.json());
 app.use(cors());
-
-app.post("/guardar-excel", (req, res) => {
-  const datosFormulario = req.body;
-  const filePath = __dirname + "/datos_vinculacion.xlsx";
-  let workbook, worksheet;
-
-  console.log("📥 Recibiendo datos para guardar en Excel:", datosFormulario);
-
-  try {
-      if (fs.existsSync(filePath)) {
-          workbook = xlsx.readFile(filePath);
-          worksheet = workbook.Sheets["Vinculaciones"] || xlsx.utils.json_to_sheet([]);
-          const datosExistentes = xlsx.utils.sheet_to_json(worksheet);
-          datosExistentes.push(datosFormulario);
-          worksheet = xlsx.utils.json_to_sheet(datosExistentes);
-      } else {
-          workbook = xlsx.utils.book_new();
-          worksheet = xlsx.utils.json_to_sheet([datosFormulario]);
-      }
-
-      xlsx.utils.book_append_sheet(workbook, worksheet, "Vinculaciones");
-      xlsx.writeFile(workbook, filePath);
-
-      console.log("✅ Datos guardados en Excel correctamente.");
-      res.json({ mensaje: "✅ Datos guardados en Excel correctamente" });
-  } catch (error) {
-      console.error("❌ Error guardando en Excel:", error);
-      res.status(500).json({ mensaje: "Error guardando en Excel" });
-  }
-});
-
-  
-app.get("/descargar-excel", (req, res) => {
-  const filePath = __dirname + "/datos_vinculacion.xlsx"; // Ruta absoluta
-
-  if (fs.existsSync(filePath)) {
-      console.log("📂 Archivo encontrado, iniciando descarga...");
-      res.download(filePath);
-  } else {
-      console.log("❌ Archivo no encontrado.");
-      res.status(404).json({ mensaje: "❌ No se encontró el archivo Excel" });
-  }
-});
 
 app.get("/", (req, res) => {
   res.send("✅ API de Vinculación funcionando 🚀");
 });
 
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor ejecutándose en el puerto ${PORT}`);
-
+app.use(express.json());
 
 app.post("/guardar-formulario", async (req, res) => {
   try {
     const pool = await poolPromise;
-
     const { Nombre, EmailContacto } = req.body;
 
     await pool.request()
@@ -208,7 +161,9 @@ app.post("/guardar-formulario", async (req, res) => {
     res.status(500).json({ success: false, message: "❌ Error al guardar en la base de datos" });
   }
 });
-  
 
-
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
 });
+
+  
