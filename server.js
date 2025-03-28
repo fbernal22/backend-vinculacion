@@ -4,8 +4,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
-const xlsx = require("xlsx");
 const fs = require("fs");
+const xlsx = require("xlsx");
+const { sql, poolPromise } = require('./db');
+
 
 const PORT = process.env.PORT || 5000; // Usa el puerto definido en .env o 5000 por defecto
 
@@ -15,7 +17,7 @@ const app = express();
 // Configurar middlewares
 app.use(bodyParser.json()); // Para manejar JSON en el cuerpo de la solicitud
 app.use(cors({
-  origin: "*",
+  origin: "https://build-peh6axs6n-fbernal22s-projects.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type"]
 }));
@@ -146,29 +148,17 @@ app.post("/guardar-excel", (req, res) => {
 
   try {
       if (fs.existsSync(filePath)) {
-          console.log("📂 Archivo Excel encontrado. Agregando datos...");
           workbook = xlsx.readFile(filePath);
-
-          // 📌 Usar la hoja "Vinculaciones" si ya existe
-          if (workbook.SheetNames.includes("Vinculaciones")) {
-              worksheet = workbook.Sheets["Vinculaciones"];
-              const datosExistentes = xlsx.utils.sheet_to_json(worksheet);
-              datosExistentes.push(datosFormulario);
-              worksheet = xlsx.utils.json_to_sheet(datosExistentes);
-              workbook.Sheets["Vinculaciones"] = worksheet; // 📌 Actualizar la hoja existente
-          } else {
-              console.log("⚠️ La hoja no existe, creando una nueva...");
-              worksheet = xlsx.utils.json_to_sheet([datosFormulario]);
-              xlsx.utils.book_append_sheet(workbook, worksheet, "Vinculaciones");
-          }
+          worksheet = workbook.Sheets["Vinculaciones"] || xlsx.utils.json_to_sheet([]);
+          const datosExistentes = xlsx.utils.sheet_to_json(worksheet);
+          datosExistentes.push(datosFormulario);
+          worksheet = xlsx.utils.json_to_sheet(datosExistentes);
       } else {
-          console.log("📂 No se encontró el archivo Excel. Creando uno nuevo...");
           workbook = xlsx.utils.book_new();
           worksheet = xlsx.utils.json_to_sheet([datosFormulario]);
-          xlsx.utils.book_append_sheet(workbook, worksheet, "Vinculaciones");
       }
 
-      // 📌 Guardar los cambios en el archivo Excel
+      xlsx.utils.book_append_sheet(workbook, worksheet, "Vinculaciones");
       xlsx.writeFile(workbook, filePath);
 
       console.log("✅ Datos guardados en Excel correctamente.");
@@ -178,6 +168,7 @@ app.post("/guardar-excel", (req, res) => {
       res.status(500).json({ mensaje: "Error guardando en Excel" });
   }
 });
+
   
 app.get("/descargar-excel", (req, res) => {
   const filePath = __dirname + "/datos_vinculacion.xlsx"; // Ruta absoluta
@@ -198,4 +189,26 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+
+
+app.post("/guardar-formulario", async (req, res) => {
+  try {
+    const pool = await poolPromise;
+
+    const { Nombre, EmailContacto } = req.body;
+
+    await pool.request()
+      .input('Nombre', sql.NVarChar, Nombre)
+      .input('EmailContacto', sql.NVarChar, EmailContacto)
+      .query(`INSERT INTO FormularioVinculacion (Nombre, EmailContacto) VALUES (@Nombre, @EmailContacto)`);
+
+    res.json({ success: true, message: "✅ Datos guardados correctamente en SQL Server" });
+  } catch (error) {
+    console.error("❌ Error al guardar en SQL Server:", error);
+    res.status(500).json({ success: false, message: "❌ Error al guardar en la base de datos" });
+  }
+});
+  
+
+
 });
