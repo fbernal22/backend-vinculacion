@@ -2,7 +2,7 @@ const sql = require('mssql');
 
 const config = {
   user: 'sa',
-  password: 'Martinez25*', // Reemplaza por la real
+  password: 'Fabian123*', // Reemplaza por la real
   server: 'ANALISTAFB', // Este es el tuyo
   database: 'vinculacion_consultores_martin_db',
   options: {

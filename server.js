@@ -4,11 +4,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
-const express = require('express');
 const { sql, poolPromise } = require('./db');
 
 
-const PORT = process.env.PORT || 5000; // Usa el puerto definido en .env o 5000 por defecto
+const PORT = process.env.PORT || 3001; // Usa el puerto definido en .env 
 
 // Crear la aplicación de Express
 const app = express();  
@@ -65,11 +64,6 @@ app.post("/enviar-correo", async (req, res) => {
   }
 });
 
-  // Ruta de prueba para saber si el servidor está corriendo
-  app.get("/", (req, res) => {
-    res.send("✅ API de Vinculación funcionando 🚀");
-  });
-
 // Obtener todas las vinculaciones
 app.get("/vinculaciones", async (req, res) => {
   try {
@@ -83,59 +77,6 @@ app.get("/vinculaciones", async (req, res) => {
 });
 
 
-// Obtener una vinculación por ID
-app.get("/vinculacion/:id", (req, res) => {
-  const { id } = req.params;
-  db.query("SELECT * FROM vinculacion WHERE id = ?", [id], (err, result) => {
-      if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Error al obtener datos" });
-          return;
-      }
-      res.json(result[0] || {});
-  });
-});
-
-// Insertar una nueva vinculación
-app.post("/vinculacion", (req, res) => {
-  const data = req.body;
-  db.query("INSERT INTO vinculacion SET ?", data, (err, result) => {
-      if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Error al insertar datos" });
-          return;
-      }
-      res.json({ id: result.insertId, ...data });
-  });
-});
-
-// Actualizar una vinculación
-app.put("/vinculacion/:id", (req, res) => {
-  const { id } = req.params;
-  const data = req.body;
-  db.query("UPDATE vinculacion SET ? WHERE id = ?", [data, id], (err) => {
-      if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Error al actualizar datos" });
-          return;
-      }
-      res.json({ message: "Vinculación actualizada" });
-  });
-});
-
-// Eliminar una vinculación
-app.delete("/vinculacion/:id", (req, res) => {
-  const { id } = req.params;
-  db.query("DELETE FROM vinculacion WHERE id = ?", [id], (err) => {
-      if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Error al eliminar datos" });
-          return;
-      }
-      res.json({ message: "Vinculación eliminada" });
-  });
-});
-
 app.use(cors());
 
 app.get("/", (req, res) => {
@@ -148,12 +89,159 @@ app.use(express.json());
 app.post("/guardar-formulario", async (req, res) => {
   try {
     const pool = await poolPromise;
-    const { Nombre, EmailContacto } = req.body;
+    const { fechadediligenciamiento, Contraparte, tipodecontraparte, Proceso, tipoPersona,
+      nombreCompleto, tipoDocumento, numeroDocumento, fechaNacimiento, paisNacimiento,
+      departamentoNacimiento, ciudadNacimiento, fechaExpedicion, paisExpedicion,
+      departamentoExpedicion, ciudadExpedicion, razonSocial, tipodeidentificaciondesociedad,
+      numeroNIT, nombreCompletorl, tipoDocumentorl, numeroDocumentoRepresentante,
+      esPEP, nombreentidad, cargoPEP, fechadevinculacionalcargo, fechadedesvinculacioncargo,
+      fideicomitentepat, EntidadFiduciaria, entidadpublica, valoradministrado,
+      descripcionrelacioncomercial, fechaConstitucion, telefonoCelular, correoElectronico,
+      direccionResidencia, paisResidencia, departamentoResidencia, ciudadResidencia,
+      paisResidenciaaccionista, departamentoResidenciaaccionista, ciudadResidenciaaccionista,
+      paisResidenciaaccionistapj, departamentoResidenciaaccionistapj, ciudadResidenciaaccionistapj,
+      actividadEconomica, ingresosMensuales, recibeotrosingresos, Valorotrosingresos,
+      descrpcionotrosingresos, egresosMensuales, activos, pasivos, patrimonioNeto, origenFondos,
+      sujetoaretencion, resolucionautoretenedor, agenteretenedor, responsableiva,
+      grancontribuyente, contribuyenterenta, agenteretenedorica, autoretenedor,
+      conceptoautoretenedor, Tienerendiminetofinanciero, rendimientosfinancieros, comision,
+      informacionbancaria, entidadfinancieradepagos, numerodecuenta, plazodepagos,
+      productosfinancierosextranjeros, indicarcual, transaccionesenelextranjero, indiquecual1,
+      responsabilidadfiscal, pais, nombredelpep, datoscomerciales, nombrerefcom, cargorefcom,
+      telefonoCelularrefcom1, correoElectronicorefcom, datosfinancieros, nombrereffin,
+      cargoreffin, telefonoCelularrefcom, correoElectronicoreffin, aceptaTerminos,
+      autorizaConsultas, declaraVeracidad, declaracionpep } = req.body;
 
     await pool.request()
-      .input('Nombre', sql.NVarChar, Nombre)
-      .input('EmailContacto', sql.NVarChar, EmailContacto)
-      .query(`INSERT INTO FormularioVinculacion (Nombre, EmailContacto) VALUES (@Nombre, @EmailContacto)`);
+    .input('fechadediligenciamiento', req.body.fechadediligenciamiento)
+    .input('Contraparte', req.body.Contraparte)
+    .input('tipodecontraparte', req.body.tipodecontraparte)
+    .input('Proceso', req.body.Proceso)
+    .input('tipoPersona', req.body.tipoPersona)
+    .input('nombreCompleto', req.body.nombreCompleto)
+    .input('tipoDocumento', req.body.tipoDocumento)
+    .input('numeroDocumento', req.body.numeroDocumento)
+    .input('fechaNacimiento', req.body.fechaNacimiento)
+    .input('paisNacimiento', req.body.paisNacimiento)
+    .input('departamentoNacimiento', req.body.departamentoNacimiento)
+    .input('ciudadNacimiento', req.body.ciudadNacimiento)
+    .input('fechaExpedicion', req.body.fechaExpedicion)
+    .input('paisExpedicion', req.body.paisExpedicion)
+    .input('departamentoExpedicion', req.body.departamentoExpedicion)
+    .input('ciudadExpedicion', req.body.ciudadExpedicion)
+    .input('razonSocial', req.body.razonSocial)
+    .input('tipodeidentificaciondesociedad', req.body.tipodeidentificaciondesociedad)
+    .input('numeroNIT', req.body.numeroNIT)
+    .input('nombreCompletorl', req.body.nombreCompletorl)
+    .input('tipoDocumentorl', req.body.tipoDocumentorl)
+    .input('numeroDocumentoRepresentante', req.body.numeroDocumentoRepresentante)
+    .input('esPEP', req.body.esPEP)
+    .input('nombreentidad', req.body.nombreentidad)
+    .input('cargoPEP', req.body.cargoPEP)
+    .input('fechadevinculacionalcargo', req.body.fechadevinculacionalcargo)
+    .input('fechadedesvinculacioncargo', req.body.fechadedesvinculacioncargo)
+    .input('fideicomitentepat', req.body.fideicomitentepat)
+    .input('EntidadFiduciaria', req.body.EntidadFiduciaria)
+    .input('entidadpublica', req.body.entidadpublica)
+    .input('valoradministrado', req.body.valoradministrado)
+    .input('descripcionrelacioncomercial', req.body.descripcionrelacioncomercial)
+    .input('fechaConstitucion', req.body.fechaConstitucion)
+    .input('telefonoCelular', req.body.telefonoCelular)
+    .input('correoElectronico', req.body.correoElectronico)
+    .input('direccionResidencia', req.body.direccionResidencia)
+    .input('paisResidencia', req.body.paisResidencia)
+    .input('departamentoResidencia', req.body.departamentoResidencia)
+    .input('ciudadResidencia', req.body.ciudadResidencia)
+    .input('paisResidenciaaccionista', req.body.paisResidenciaaccionista)
+    .input('departamentoResidenciaaccionista', req.body.departamentoResidenciaaccionista)
+    .input('ciudadResidenciaaccionista', req.body.ciudadResidenciaaccionista)
+    .input('paisResidenciaaccionistapj', req.body.paisResidenciaaccionistapj)
+    .input('departamentoResidenciaaccionistapj', req.body.departamentoResidenciaaccionistapj)
+    .input('ciudadResidenciaaccionistapj', req.body.ciudadResidenciaaccionistapj)
+    .input('actividadEconomica', req.body.actividadEconomica)
+    .input('ingresosMensuales', req.body.ingresosMensuales)
+    .input('recibeotrosingresos', req.body.recibeotrosingresos)
+    .input('Valorotrosingresos', req.body.Valorotrosingresos)
+    .input('descrpcionotrosingresos', req.body.descrpcionotrosingresos)
+    .input('egresosMensuales', req.body.egresosMensuales)
+    .input('activos', req.body.activos)
+    .input('pasivos', req.body.pasivos)
+    .input('patrimonioNeto', req.body.patrimonioNeto)
+    .input('origenFondos', req.body.origenFondos)
+    .input('sujetoaretencion', req.body.sujetoaretencion)
+    .input('resolucionautoretenedor', req.body.resolucionautoretenedor)
+    .input('agenteretenedor', req.body.agenteretenedor)
+    .input('responsableiva', req.body.responsableiva)
+    .input('grancontribuyente', req.body.grancontribuyente)
+    .input('contribuyenterenta', req.body.contribuyenterenta)
+    .input('agenteretenedorica', req.body.agenteretenedorica)
+    .input('autoretenedor', req.body.autoretenedor)
+    .input('conceptoautoretenedor', req.body.conceptoautoretenedor)
+    .input('Tienerendiminetofinanciero', req.body.Tienerendiminetofinanciero)
+    .input('rendimientosfinancieros', req.body.rendimientosfinancieros)
+    .input('comision', req.body.comision)
+    .input('informacionbancaria', req.body.informacionbancaria)
+    .input('entidadfinancieradepagos', req.body.entidadfinancieradepagos)
+    .input('numerodecuenta', req.body.numerodecuenta)
+    .input('plazodepagos', req.body.plazodepagos)
+    .input('productosfinancierosextranjeros', req.body.productosfinancierosextranjeros)
+    .input('indicarcual', req.body.indicarcual)
+    .input('transaccionesenelextranjero', req.body.transaccionesenelextranjero)
+    .input('indiquecual1', req.body.indiquecual1)
+    .input('responsabilidadfiscal', req.body.responsabilidadfiscal)
+    .input('pais', req.body.pais)
+    .input('nombredelpep', req.body.nombredelpep)
+    .input('datoscomerciales', req.body.datoscomerciales)
+    .input('nombrerefcom', req.body.nombrerefcom)
+    .input('cargorefcom', req.body.cargorefcom)
+    .input('telefonoCelularrefcom1', req.body.telefonoCelularrefcom1)
+    .input('correoElectronicorefcom', req.body.correoElectronicorefcom)
+    .input('datosfinancieros', req.body.datosfinancieros)
+    .input('nombrereffin', req.body.nombrereffin)
+    .input('cargoreffin', req.body.cargoreffin)
+    .input('telefonoCelularrefcom', req.body.telefonoCelularrefcom)
+    .input('correoElectronicoreffin', req.body.correoElectronicoreffin)
+    .input('aceptaTerminos', req.body.aceptaTerminos)
+    .input('autorizaConsultas', req.body.autorizaConsultas)
+    .input('declaraVeracidad', req.body.declaraVeracidad)
+    .input('declaracionpep', req.body.declaracionpep)
+    .query(`INSERT INTO FormularioVinculacion ([fechadediligenciamiento], [Contraparte], [tipodecontraparte], [Proceso], [tipoPersona], [nombreCompleto],
+    [tipoDocumento], [numeroDocumento], [fechaNacimiento], [paisNacimiento], [departamentoNacimiento], [ciudadNacimiento],
+    [fechaExpedicion], [paisExpedicion], [departamentoExpedicion], [ciudadExpedicion], [razonSocial],
+    [tipodeidentificaciondesociedad], [numeroNIT], [nombreCompletorl], [tipoDocumentorl], [numeroDocumentoRepresentante],
+    [esPEP], [nombreentidad], [cargoPEP], [fechadevinculacionalcargo], [fechadedesvinculacioncargo],
+    [fideicomitentepat], [EntidadFiduciaria], [entidadpublica], [valoradministrado], [descripcionrelacioncomercial],
+    [fechaConstitucion], [telefonoCelular], [correoElectronico], [direccionResidencia], [paisResidencia],
+    [departamentoResidencia], [ciudadResidencia], [paisResidenciaaccionista], [departamentoResidenciaaccionista],
+    [ciudadResidenciaaccionista], [paisResidenciaaccionistapj], [departamentoResidenciaaccionistapj],
+    [ciudadResidenciaaccionistapj], [actividadEconomica], [ingresosMensuales], [recibeotrosingresos],
+    [Valorotrosingresos], [descrpcionotrosingresos], [egresosMensuales], [activos], [pasivos], [patrimonioNeto],
+    [origenFondos], [sujetoaretencion], [resolucionautoretenedor], [agenteretenedor], [responsableiva],
+    [grancontribuyente], [contribuyenterenta], [agenteretenedorica], [autoretenedor], [conceptoautoretenedor],
+    [Tienerendiminetofinanciero], [rendimientosfinancieros], [comision], [informacionbancaria],
+    [entidadfinancieradepagos], [numerodecuenta], [plazodepagos], [productosfinancierosextranjeros],
+    [indicarcual], [transaccionesenelextranjero], [indiquecual1], [responsabilidadfiscal], [pais],
+    [nombredelpep], [datoscomerciales], [nombrerefcom], [cargorefcom], [telefonoCelularrefcom1],
+    [correoElectronicorefcom], [datosfinancieros], [nombrereffin], [cargoreffin], [telefonoCelularrefcom],
+    [correoElectronicoreffin], [aceptaTerminos], [autorizaConsultas], [declaraVeracidad], [declaracionpep]) VALUES (@fechadediligenciamiento, @Contraparte, @tipodecontraparte, @Proceso, @tipoPersona, @nombreCompleto,
+    @tipoDocumento, @numeroDocumento, @fechaNacimiento, @paisNacimiento, @departamentoNacimiento, @ciudadNacimiento,
+    @fechaExpedicion, @paisExpedicion, @departamentoExpedicion, @ciudadExpedicion, @razonSocial,
+    @tipodeidentificaciondesociedad, @numeroNIT, @nombreCompletorl, @tipoDocumentorl, @numeroDocumentoRepresentante,
+    @esPEP, @nombreentidad, @cargoPEP, @fechadevinculacionalcargo, @fechadedesvinculacioncargo,
+    @fideicomitentepat, @EntidadFiduciaria, @entidadpublica, @valoradministrado, @descripcionrelacioncomercial,
+    @fechaConstitucion, @telefonoCelular, @correoElectronico, @direccionResidencia, @paisResidencia,
+    @departamentoResidencia, @ciudadResidencia, @paisResidenciaaccionista, @departamentoResidenciaaccionista,
+    @ciudadResidenciaaccionista, @paisResidenciaaccionistapj, @departamentoResidenciaaccionistapj,
+    @ciudadResidenciaaccionistapj, @actividadEconomica, @ingresosMensuales, @recibeotrosingresos,
+    @Valorotrosingresos, @descrpcionotrosingresos, @egresosMensuales, @activos, @pasivos, @patrimonioNeto,
+    @origenFondos, @sujetoaretencion, @resolucionautoretenedor, @agenteretenedor, @responsableiva,
+    @grancontribuyente, @contribuyenterenta, @agenteretenedorica, @autoretenedor, @conceptoautoretenedor,
+    @Tienerendiminetofinanciero, @rendimientosfinancieros, @comision, @informacionbancaria,
+    @entidadfinancieradepagos, @numerodecuenta, @plazodepagos, @productosfinancierosextranjeros,
+    @indicarcual, @transaccionesenelextranjero, @indiquecual1, @responsabilidadfiscal, @pais,
+    @nombredelpep, @datoscomerciales, @nombrerefcom, @cargorefcom, @telefonoCelularrefcom1,
+    @correoElectronicorefcom, @datosfinancieros, @nombrereffin, @cargoreffin, @telefonoCelularrefcom,
+    @correoElectronicoreffin, @aceptaTerminos, @autorizaConsultas, @declaraVeracidad, @declaracionpep)`);
 
     res.json({ success: true, message: "✅ Datos guardados correctamente en SQL Server" });
   } catch (error) {
